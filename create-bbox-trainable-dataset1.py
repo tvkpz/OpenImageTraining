@@ -4,8 +4,8 @@ from config import config
 import cv2
 import urllib
 from subprocess import call
-from subproces import check_output
-import multiprocessing
+from subprocess import check_output
+import multiprocessing, logging
  
 def connect(conn=None):
     """ Connect to the PostgreSQL database server """
@@ -103,6 +103,9 @@ if __name__ == '__main__':
     cur.execute("SELECT DISTINCT annotations_human_bbox.image_id FROM annotations_human_bbox WHERE class_id='"+person_id+"'")
     imageid_list = cur.fetchall()
     print(len(imageid_list))
+    # close the communication with the PostgreSQL
+    cur.close()
+    conn.close()
 
     # execute a statement
     #print('PostgreSQL database version:')
@@ -114,10 +117,19 @@ if __name__ == '__main__':
     #cur.execute("SELECT final_table.image_id, combine(final_table.original_url, final_table.class_id, final_table.x_min, final_table.y_min, final_table.x_max, final_table.y_max) FROM (SELECT images_info.original_url, annotations_human_bbox.image_id, annotations_human_bbox.class_id, annotations_human_bbox.x_min, annotations_human_bbox.y_min, annotations_human_bbox.x_max, annotations_human_bbox.y_max FROM annotations_human_bbox, class_description, images_info WHERE ((class_description.class_desc='Person' AND class_description.class_id=annotations_human_bbox.class_id) AND annotations_human_bbox.image_id=images_info.image_id)) AS final_table  GROUP BY final_table.image_id")
     #cur.execute("SELECT n1.image_id, n1.class_id, n1.x_min, n1.y_min, n1.x_max, n1.y_max FROM (SELECT image_id, class_id, x_min, y_min, x_max, y_max FROM annotations_human_bbox GROUP BY image_id) n1 INNER JOIN (SELECT class_id FROM class_description) n2 ON (n1.class_id = n2.class_id AND n2.class_desc = 'Person')")
 
-    for image_id in imageid_list:
-        p = multiprocessing.Process(target=worker, args=(image_id,person_id,))
-        jobs.append(p)
-        p.start()
+    #jobs = []
+    cores = (multiprocessing.cpu_count()-1)
+    pool = multiprocessing.Pool(cores)
+    for image_id in imageid_list:       
+        multiprocessing.log_to_stderr(logging.DEBUG)
+        #p = multiprocessing.Process(target=worker, args=(image_id,person_id,))
+        jobs = pool.apply_async(worker, (image_id, person_id))
+        #jobs.append(p)
+        #p.start()
+
+    pool.close()
+    pool.join()
+    jobs.get()
 
     print("Annotation files created")
     result = check_output(['ls','/openimg2/OpenImages/Annotations']).split('\n')
