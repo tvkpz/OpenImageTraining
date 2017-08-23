@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataSource name="PostgreSQL - openimage@localhost">
+  <database-model serializer="dbm" rdbms="POSTGRES" format-version="4.4">
+    <root id="1"/>
+    <database id="2" parent="1" name="openimage">
+      <ObjectId>16384</ObjectId>
+      <Current>1</Current>
+      <Visible>1</Visible>
+    </database>
+    <database id="3" parent="1" name="postgres">
+      <ObjectId>12379</ObjectId>
+    </database>
+    <schema id="4" parent="2" name="public">
+      <ObjectId>2200</ObjectId>
+      <IntrospectionTimestamp>2017-08-22.09:25:08.852</IntrospectionTimestamp>
+      <IntrospectionStateNumber>637</IntrospectionStateNumber>
+      <Current>1</Current>
+      <Visible>1</Visible>
+    </schema>
+    <schema id="5" parent="2" name="pg_catalog">
+      <ObjectId>11</ObjectId>
+    </schema>
+    <schema id="6" parent="2" name="pg_toast">
+      <ObjectId>99</ObjectId>
+    </schema>
+    <schema id="7" parent="2" name="pg_temp_1">
+      <ObjectId>11816</ObjectId>
+    </schema>
+    <schema id="8" parent="2" name="pg_toast_temp_1">
+      <ObjectId>11817</ObjectId>
+    </schema>
+    <schema id="9" parent="2" name="information_schema">
+      <ObjectId>12087</ObjectId>
+    </schema>
+    <table id="10" parent="4" name="annotations_human_bbox">
+      <ObjectId>16392</ObjectId>
+      <StateNumber>628</StateNumber>
+    </table>
+    <table id="11" parent="4" name="class_description">
+      <ObjectId>16385</ObjectId>
+      <StateNumber>624</StateNumber>
+    </table>
+    <table id="12" parent="4" name="images_info">
+      <ObjectId>16401</ObjectId>
+      <StateNumber>636</StateNumber>
+    </table>
+    <table id="13" parent="4" name="testing">
+      <ObjectId>16416</ObjectId>
+      <StateNumber>637</StateNumber>
+    </table>
+    <column id="14" parent="10" name="image_id">
+      <Position>1</Position>
+      <DataType>varchar|0</DataType>
+      <StateNumber>628</StateNumber>
+    </column>
+    <column id="15" parent="10" name="source">
+      <Position>2</Position>
+      <DataType>char(20)|0</DataType>
+      <StateNumber>628</StateNumber>
+    </column>
+    <column id="16" parent="10" name="class_id">
+      <Position>3</Position>
+      <DataType>varchar|0</DataType>
+      <StateNumber>628</StateNumber>
+    </column>
+    <column id="17" parent="10" name="confidence">
+      <Position>4</Position>
+      <DataType>double precision|0</DataType>
+      <StateNumber>628</StateNumber>
+    </column>
+    <column id="18" parent="10" name="x_min">
+      <Position>5</Position>
+      <DataType>double precision|0</DataType>
+      <StateNumber>628</StateNumber>
+    </column>
+    <column id="19" parent="10" name="x_max">
+      <Position>6</Position>
+      <DataType>double precision|0</DataType>
+      <StateNumber>628</StateNumber>
+    </column>
+    <column id="20" parent="10" name="y_min">
+      <Position>7</Position>
+      <DataType>double precision|0</DataType>
+      <StateNumber>628</StateNumber>
+    </column>
+    <column id="21" parent="10" name="y_max">
+      <Position>8</Position>
+      <DataType>double precision|0</DataType>
+      <StateNumber>628</StateNumber>
+    </column>
+    <column id="22" parent="11" name="class_id">
+      <Position>1</Position>
+      <DataType>varchar|0</DataType>
+      <StateNumber>624</StateNumber>
+    </column>
+    <column id="23" parent="11" name="class_desc">
+      <Position>2</Position>
+      <DataType>varchar|0</DataType>
+      <StateNumber>624</StateNumber>
+    </column>
+    <column id="24" parent="12" name="image_id">
+      <Position>1</Position>
+      <DataType>varchar|0</DataType>
+      <StateNumber>631</StateNumber>
+    </column>
+    <column id="25" parent="12" name="subset">
+      <Position>2</Position>
+      <DataType>char(10)|0</DataType>
+      <StateNumber>631</StateNumber>
+    </column>
+    <column id="26" parent="12" name="original_url">
+      <Position>3</Position>
+      <DataType>varchar|0</DataType>
+      <StateNumber>631</StateNumber>
+    </column>
+    <column id="27" parent="12" name="original_landing_url">
+      <Position>4</Position>
+      <DataType>varchar|0</DataType>
+      <StateNumber>631</StateNumber>
+    </column>
+    <column id="28" parent="12" name="license">
+      <Position>5</Position>
+      <DataType>varchar|0</DataType>
+      <StateNumber>631</StateNumber>
+    </column>
+    <column id="29" parent="12" name="author_profile_url">
+      <Position>6</Position>
+      <DataType>varchar|0</DataType>
+      <StateNumber>631</StateNumber>
+    </column>
+    <column id="30" parent="12" name="author">
+      <Position>7</Position>
+      <DataType>varchar|0</DataType>
+      <StateNumber>631</StateNumber>
+    </column>
+    <column id="31" parent="12" name="title">
+      <Position>8</Position>
+      <DataType>varchar|0</DataType>
+      <StateNumber>631</StateNumber>
+    </column>
+    <column id="32" parent="12" name="original_size">
+      <Position>9</Position>
+      <DataType>double precision|0</DataType>
+      <StateNumber>631</StateNumber>
+    </column>
+    <column id="33" parent="12" name="original_md5">
+      <Position>10</Position>
+      <DataType>varchar|0</DataType>
+      <StateNumber>631</StateNumber>
+    </column>
+    <column id="34" parent="12" name="thumbnail300kurl">
+      <Position>11</Position>
+      <DataType>varchar|0</DataType>
+      <StateNumber>631</StateNumber>
+    </column>
+    <column id="35" parent="12" name="width">
+      <Position>12</Position>
+      <DataType>integer|0</DataType>
+      <StateNumber>634</StateNumber>
+    </column>
+    <column id="36" parent="12" name="height">
+      <Position>13</Position>
+      <DataType>integer|0</DataType>
+      <StateNumber>635</StateNumber>
+    </column>
+    <column id="37" parent="12" name="channel">
+      <Position>14</Position>
+      <DataType>integer|0</DataType>
+      <StateNumber>636</StateNumber>
+    </column>
+    <column id="38" parent="13" name="column1">
+      <Position>1</Position>
+      <DataType>varchar|0</DataType>
+      <StateNumber>637</StateNumber>
+    </column>
+    <column id="39" parent="13" name="column2">
+      <Position>2</Position>
+      <DataType>integer|0</DataType>
+      <StateNumber>637</StateNumber>
+    </column>
+  </database-model>
+</dataSource>
