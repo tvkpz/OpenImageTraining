@@ -9,6 +9,7 @@ from logging import StreamHandler
 
 import cv2
 import requests
+from cv2 import cv2
 from lxml.etree import Error
 from pip._vendor.distlib._backport import shutil
 from psycopg2.pool import ThreadedConnectionPool
@@ -24,12 +25,17 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(StreamHandler(sys.stdout))
 
-db_conn_pool = ThreadedConnectionPool(minconn=1, maxconn=40, **db_con_params)
+number_of_workers = int(multiprocessing.cpu_count() * 1.5 - 1)
+logger.info("Using %s workers" % number_of_workers)
+db_conn_pool = ThreadedConnectionPool(minconn=1, maxconn=number_of_workers + 5, **db_con_params)
 
-record_no = 100
+record_no = 1000
 
 
-def connect():
+# import cProfile
+
+
+def get_db_conn():
     logger.debug('Getting DB con...')
     # conn = psycopg2.connect(**db_con_params)
     try:
@@ -42,6 +48,14 @@ def connect():
 
 
 def worker(image_url, image_id, class_description):
+    process_image(image_url, image_id, class_description)
+    # process = multiprocessing.current_process()
+    # cProfile.runctx("process_image(image_url, image_id, class_description)",
+    #                 globals(), locals(),
+    #                 'psstat/prof%s.pstat' % process.name)
+
+
+def process_image(image_url, image_id, class_description):
     image_name = image_url.split('/')[-1]
     logger.debug("Processing " + image_name)
 
@@ -64,21 +78,20 @@ def worker(image_url, image_id, class_description):
                     'File does not exist and will not be included in training: ' + image_name + ", error; " + e)
                 return
     if img is None:
-        logger.error(
-            'Invalid image' + image_name)
+        logger.error('Invalid image' + image_name)
         return
 
     try:
         ht, wd, ch = img.shape
     except:
         logger.error("Invalid image")
-        pass
 
     anno_infos = get_annotation_XXXXXX(image_id)
 
-    if len(anno_infos) == 0:
-        return
+    write_2_xml_XXXXXXXXX(anno_infos, ch, class_description, ht, image_name, wd)
 
+
+def write_2_xml_XXXXXXXXX(anno_infos, ch, class_description, ht, image_name, wd):
     anno_file = image_name.split('.')[0] + ".xml"
     with open(output_annotation_dir + anno_file, "w") as f:
         f.write("<annotation>\n")
@@ -110,7 +123,7 @@ def worker(image_url, image_id, class_description):
 
 
 def get_annotation_XXXXXX(image_id):
-    conn = connect()
+    conn = get_db_conn()
     cur = conn.cursor()
     cur.execute(
         "SELECT class_id, x_min, x_max, y_min, y_max "
@@ -122,11 +135,11 @@ def get_annotation_XXXXXX(image_id):
 
 
 def process():
-    cores = (multiprocessing.cpu_count() - 1)
+    cores = (number_of_workers)
     multiprocessing_pool = multiprocessing.Pool(cores - 1)
     for image_url, image_id in images:
         # multiprocessing.log_to_stderr(logging.DEBUG)
-        jobs = multiprocessing_pool.apply_async(worker, (image_url, image_id, class_description))
+        jobs = multiprocessing_pool.apply_async(worker, (image_url, image_id, classes_description))
     multiprocessing_pool.close()
     multiprocessing_pool.join()
     jobs.get()
@@ -136,10 +149,10 @@ def get_all_images():
     logger.info("Getting the images")
     start = time.time()
 
-    conn = connect()
+    conn = get_db_conn()
     cur = conn.cursor()
     cur.execute(
-        "SELECT original_url, image_id FROM images_info where image_id in (SELECT DISTINCT images_info.image_id FROM annotations_human_bbox) LIMIT " + str(
+        "SELECT original_url, image_id FROM images_info WHERE image_id IN (SELECT DISTINCT image_id FROM annotations_human_bbox) LIMIT " + str(
             record_no))
     fetchall = cur.fetchall()
     db_conn_pool.putconn(conn)
@@ -151,7 +164,7 @@ def get_all_classes():
     logger.info("Getting the classes")
     start = time.time()
 
-    db_conn = connect()
+    db_conn = get_db_conn()
     cur = db_conn.cursor()
     cur.execute("SELECT class_description.class_id, class_description.class_desc FROM class_description")
     fetchall = cur.fetchall()
@@ -171,16 +184,16 @@ if __name__ == '__main__':
     classes = get_all_classes()
     logger.info("Total number of classes: " + str(len(classes)))
 
-    class_description = {}
+    classes_description = {}
     for class_ in classes:
-        class_description[class_[0]] = class_[1]
+        classes_description[class_[0]] = class_[1]
 
     timeit_timeit = timeit.timeit(lambda: process(), number=1)
 
     average_time = timeit_timeit / record_no
     logger.info("Total time taken: " + str(timeit_timeit))
     logger.info("Speed: " + str(1 / average_time) + " images/second")
-    logger.info("Will take " + str(int(669124 * average_time / 3600)) + " hours to finish 669124 mil images")
+    logger.info("Will take " + str(int(669124 * average_time / 60)) + " minutes to finish 669124 images")
 
     logger.info("Clean up the output folder")
-    # shutil.rmtree(output_annotation_dir)
+    shutil.rmtree(output_annotation_dir)
