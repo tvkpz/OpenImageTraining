@@ -9,12 +9,11 @@ from logging import StreamHandler
 
 import cv2
 import requests
+from config import config
 from cv2 import cv2
 from lxml.etree import Error
 from pip._vendor.distlib._backport import shutil
 from psycopg2.pool import ThreadedConnectionPool
-
-from config import config
 
 output_annotation_dir = "/home/ubuntu/bob/" + time.strftime('%H%M%S', time.localtime()) + "/"
 os.mkdir(output_annotation_dir)

@@ -1,0 +1,146 @@
+# ******
+Here '*' indicates dynamically created and not pre-determined
+# ******
+
+# Data directory for OpenImages dataset
+# When customer uploads his own data and annotations (in .csv) a similar directory
+# structure is created for his own dataset
+# The category_name is extracted from the .csv file
+# The annonations .xml files are created from the .csv file
+
++OpenImages
+  +2017 # date
+    +Annotations
+      -<image_name>.xml*
+    +ImageSets
+      +Main
+        -train.txt*
+        -trainval.txt*
+        -val.txt*
+        -<category_name>_train.txt*
+        -<category_name>_val.txt*
+        -<category_name>_trainval.txt*
+    +JPEGImages
+      -<image_name>.jpg*
+
+# Data directory structure for customer uploaded Data
+
++Root
+  +Annotations
+    -annotation_file_name.csv
+  +JPEGImages
+    -<image_name>,jpg*
+
+# Dynamic directory structure for training and evaluation
+# This directory structure is created for training job instance
+# Note data_info folder can be shared across multiple training job instances
+# Similarly config and pre-trained models can be also shared between training job instances
+# Note that our out-of-the box FS uses these pre-trained models, hence all shares point to that
+
++train_eval_info
+  +data_info # COULD BE SHARED FOLDER USING symbolic link
+    -label_map_file # All categories information*
+    -train_pascal.record #training_TFRecord_file*
+    -eval_pascal.record  #evaluation_TFRecord_file*
+  +model_info
+    +model_<number>*
+      -pipeline_config_file # COULD BE SHARED FILE USING symbolic link
+      +pre-trained-models # COULD BE SHARED FOLDER USING symbolic link
+        -model.ckpt-<iteration_number>.meta*
+        -model.ckpt-<iteration_number>.data-00000-of-00001*
+        -model.ckpt-<iteration_number>.index
+      +output_train_ckpts
+        -model.ckpt-<iteration_number>.meta*
+        -model.ckpt-<iteration_number>.data-00000-of-00001*
+        -model.ckpt-<iteration_number>.index
+      +eval_events
+      +SavedModel
+        +version
+          -saved_model.pb
+          +variables
+
+
+# creating tfrecord file for Training over OpenImages dataset
+# For customer data it will be similar
+
+python object_detection/create_pascal_tf_record.py \
+--label_map_path=<parent>/data_info/label_map_file \
+--data_dir=<path_to_data_dir>/OpenImages \
+--set=train \
+--year=2017 \
+--output_path=<path_to_store>/pascal.record
+
+# creating tfrecord file for Evaluation over OpenImages dataset
+# For customer data it will be similar
+# Evaluation process is started by a controller after first training ckpt is created
+
+python object_detection/create_pascal_tf_record.py \
+--label_map_path=<parent>/data_info/label_map_file \
+--data_dir=<path_to_data_dir>/OpenImages \
+--set=eval \
+--year=2017 \
+--output_path=<path_to_store>/eval_pascal.record
+
+# Train: From parent directory that contains both 
+#        object_detection and slim directories
+#        Number of iterations can be set in the config file
+
+python object_detection/train.py \
+--logtostderr \
+--pipeline_config_path=<parent>/model_info/model_<number>/pipeline_confg_file \
+--train_dir=<parent>/model_info/model_<number>/train_ckpts
+
+# Evaluation: From parent directory that contains both 
+#             object_detection and slim directories
+#             Number of iterations can be fixed in the config file
+
+python object_detection/eval.py \
+--logtostderr \
+--pipeline_config_path=<parent>/model_info/model_<number>/pipeline_confg_file \
+--checkpoint_dir=<parent>/model_info/model_<number>/train_ckpts \
+--eval_dir=<parent>/model_info/model_<number>/eval_events
+
+# Tensorboard
+
+tensorboard --logdir=<parent>/model_info/model_<number>
+
+# Exporting .ckpt file to .pb file
+
+CUDA_VISIBLE_DEVICES=0 python object_detection/export_inference_graph.py \
+--input_type image_tensor \
+--pipeline_config_path=<parent>/model_info/model_<number>/pipeline_confg_file \
+--checkpoint_path=<parent>/model_info/model_<number>/train_ckpts/model.ckpt \
+--inference_graph_path  <parent>/model_info/model_<number>/SavedModel \
+--export_as_saved_model True
+
+# Upload .pb file to model repository
+
+  ##### To fill in API call here
+
+# Build tensorflow serving object detection model server
+
+bazel build -c opt //tensorflow_serving/model_servers:tensorflow_model_server
+
+# Load model to tensorflow serving model server
+
+bazel-bin/tensorflow_serving/model_servers/tensorflow_model_server \
+--enable_batching \ 
+--port=9000 \
+--model_name=frcnn \
+--model_base_path=<parent>/model_info/model_<number>/SavedModel
+
+# Build tensorflow serving object detection client
+
+bazel build -c opt //tensorflow_serving/example:frcnn_client
+
+# Client call 
+
+bazel-bin/tensorflow_serving/example/frcnn_client \
+--image=<image_name> \
+--server=localhost:9000
+
+
+
+
+
+
