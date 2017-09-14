@@ -25,11 +25,12 @@ Here '*' indicates dynamically created and not pre-determined
 
 # Data directory structure for customer uploaded Data
 
-+Root
-  +Annotations
-    -annotation_file_name.csv
-  +JPEGImages
-    -<image_name>,jpg*
++customer-id
+  +upload_date-time
+    +Annotations
+      -annotation_file_name.csv
+    +JPEGImages
+      -<image_name>,jpg*
 
 # Dynamic directory structure for training and evaluation
 # This directory structure is created for training job instance
